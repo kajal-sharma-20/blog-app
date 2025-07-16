@@ -7,9 +7,11 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
   const [selectedBlog, setSelectedBlog] = useState(null);
   const modalRef = useRef(null);
 
-  // Sort blogs based on sortBy and sortOrder
+  // ✅ Safe fallback for sorting blogs
   const sortedBlogs = useMemo(() => {
-    return [...allBlogs].sort((a, b) => {
+    const blogs = Array.isArray(allBlogs) ? allBlogs : [];
+
+    return [...blogs].sort((a, b) => {
       if (sortBy === "author") {
         const authorA = a.author?.username?.toLowerCase() || "";
         const authorB = b.author?.username?.toLowerCase() || "";
@@ -24,7 +26,6 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
     });
   }, [allBlogs, sortBy, sortOrder]);
 
-  // Modal controls
   const openModal = (blog) => {
     setSelectedBlog(blog);
     setShowModal(true);
@@ -35,7 +36,6 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
     setSelectedBlog(null);
   };
 
-  // Handle outside click to close modal
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (showModal && modalRef.current && !modalRef.current.contains(event.target)) {
@@ -46,14 +46,12 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showModal]);
 
-  // Truncate description to first three words
   const getTruncatedDescription = (description) => {
     if (!description) return "No description...";
     const words = description.trim().split(/\s+/);
     return words.length > 3 ? words.slice(0, 3).join(" ") + "..." : description + "...";
   };
 
-  // Handle row click, excluding delete button
   const handleRowClick = (e, blog) => {
     if (e.target.closest("button")) return;
     openModal(blog);
@@ -62,7 +60,8 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
   return (
     <>
       <h2 className="text-2xl font-bold mb-8 text-indigo-600">Blog Collection</h2>
-      {allBlogs.length > 0 ? (
+
+      {Array.isArray(allBlogs) && allBlogs.length > 0 ? (
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <label className="text-sm font-semibold text-gray-700">Sort by:</label>
@@ -150,9 +149,8 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
             ref={modalRef}
-            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative"
           >
-            {/* Close Button */}
             <button
               onClick={closeModal}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-xl"
@@ -160,18 +158,18 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
               ×
             </button>
 
-            {/* Header */}
             <div className="flex items-center p-4 border-b border-gray-100">
               <div className="w-8 h-8 rounded-full bg-indigo-500 text-white font-bold flex items-center justify-center">
                 {selectedBlog.author?.username?.[0]?.toUpperCase() || "U"}
               </div>
               <div className="ml-3">
-                <p className="text-sm font-semibold text-gray-800">{selectedBlog.author?.username || "Unknown Author"}</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {selectedBlog.author?.username || "Unknown Author"}
+                </p>
                 <p className="text-xs text-gray-500">{selectedBlog.category || "Uncategorized"}</p>
               </div>
             </div>
 
-            {/* Image */}
             {selectedBlog.thumbnail && (
               <img
                 src={selectedBlog.thumbnail}
@@ -180,12 +178,10 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
               />
             )}
 
-            {/* Content */}
             <div className="p-5">
               <h2 className="text-xl font-bold text-indigo-600 mb-3">{selectedBlog.title}</h2>
               <p className="text-gray-700 text-sm mb-6">{selectedBlog.description}</p>
 
-              {/* Engagement Metrics */}
               <div className="flex items-center gap-4 text-sm text-gray-600 pt-4 border-t border-gray-100">
                 <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full">
                   <BiSolidLike className="text-blue-500" />
@@ -201,13 +197,16 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
                 </div>
               </div>
 
-              {/* Date */}
               <p className="text-xs text-gray-400 mt-5">
-                Posted on {new Date(selectedBlog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                Posted on{" "}
+                {new Date(selectedBlog.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </p>
             </div>
 
-            {/* Close Button (Bottom) */}
             <div className="p-5">
               <button
                 onClick={closeModal}
