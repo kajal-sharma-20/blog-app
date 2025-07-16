@@ -7,7 +7,7 @@ function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handle
   const [selectedBlog, setSelectedBlog] = useState(null);
   const modalRef = useRef(null);
 
-  // ✅ Safe fallback for sorting blogs
+  //  Safe fallback for sorting blogs
   const sortedBlogs = useMemo(() => {
     const blogs = Array.isArray(allBlogs) ? allBlogs : [];
 
