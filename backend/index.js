@@ -26,6 +26,9 @@ connectDB()
     process.exit(1)
   });
 
+  app.get("/api/hello", (req, res) => {
+    res.json({ message: "Hello" });
+  });
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
