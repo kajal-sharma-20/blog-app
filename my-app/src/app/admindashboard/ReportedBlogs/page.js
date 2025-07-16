@@ -9,32 +9,32 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Sorting function
-  const sortedBlogs = [...reportedBlogs].sort((a, b) => {
-    switch (sortOption) {
-      case "title-asc":
-        return a.title.localeCompare(b.title);
-      case "title-desc":
-        return b.title.localeCompare(a.title);
-      case "reports-asc":
-        return a.reports.length - b.reports.length;
-      case "reports-desc":
-        return b.reports.length - a.reports.length;
-      case "date-asc":
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      case "date-desc":
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      default:
-        return 0;
-    }
-  });
+  //  Safely handle reportedBlogs being undefined or not an array
+  const sortedBlogs = Array.isArray(reportedBlogs)
+    ? [...reportedBlogs].sort((a, b) => {
+        switch (sortOption) {
+          case "title-asc":
+            return a.title.localeCompare(b.title);
+          case "title-desc":
+            return b.title.localeCompare(a.title);
+          case "reports-asc":
+            return (a.reports?.length || 0) - (b.reports?.length || 0);
+          case "reports-desc":
+            return (b.reports?.length || 0) - (a.reports?.length || 0);
+          case "date-asc":
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          case "date-desc":
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          default:
+            return 0;
+        }
+      })
+    : [];
 
-  // Toggle expanded description
   const toggleExpand = (blogId) => {
     setExpandedBlog(expandedBlog === blogId ? null : blogId);
   };
 
-  // Sort options configuration
   const sortOptions = [
     { value: "reports-desc", label: "Most Reports" },
     { value: "reports-asc", label: "Fewest Reports" },
@@ -44,12 +44,10 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
     { value: "date-asc", label: "Oldest" },
   ];
 
-  // Handle dropdown toggle
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -62,14 +60,13 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
     };
   }, []);
 
-  // Handle sort option selection
   const handleSortSelect = (value) => {
     setSortOption(value);
     setIsDropdownOpen(false);
   };
 
-  // Get the label of the current sort option
-  const currentSortLabel = sortOptions.find((option) => option.value === sortOption)?.label || "Most Reports";
+  const currentSortLabel =
+    sortOptions.find((option) => option.value === sortOption)?.label || "Most Reports";
 
   return (
     <>
@@ -83,7 +80,9 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
               className="flex items-center gap-2 bg-gray-50 border border-gray-300 rounded-xl py-2 px-4 text-sm text-gray-600 shadow-md hover:bg-gray-100 transition-colors"
             >
               <span>{currentSortLabel}</span>
-              <FiChevronDown className={`text-lg transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+              <FiChevronDown
+                className={`text-lg transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
             </button>
             {isDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
@@ -110,10 +109,14 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {sortedBlogs.map((blog) => (
             <div key={blog._id} className="rounded-xl bg-white shadow-md">
-              {/* Blog thumbnail */}
+              {/* Thumbnail */}
               <div className="w-full h-48">
                 {blog.thumbnail ? (
-                  <img src={blog.thumbnail} alt={blog.title} className="w-full h-full object-cover" />
+                  <img
+                    src={blog.thumbnail}
+                    alt={blog.title}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                     <span className="text-gray-500">No Image</span>
@@ -121,18 +124,24 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
                 )}
               </div>
 
-              {/* Author info */}
+              {/* Author */}
               <div className="p-3 flex items-center">
                 <div className="w-7 h-7 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs">
                   {blog.author?.username?.[0]?.toUpperCase() || "?"}
                 </div>
-                <span className="ml-2 text-xs text-gray-800">{blog.author?.username || "Unknown Author"}</span>
+                <span className="ml-2 text-xs text-gray-800">
+                  {blog.author?.username || "Unknown Author"}
+                </span>
               </div>
 
-              {/* Blog content */}
+              {/* Content */}
               <div className="p-5">
                 <h3 className="text-lg font-bold mb-3 text-gray-800">{blog.title}</h3>
-                <p className={`text-sm text-gray-600 ${expandedBlog === blog._id ? "" : "line-clamp-3"}`}>
+                <p
+                  className={`text-sm text-gray-600 ${
+                    expandedBlog === blog._id ? "" : "line-clamp-3"
+                  }`}
+                >
                   {blog.description}
                 </p>
                 {blog.description && blog.description.split(" ").length > 20 && (
@@ -158,7 +167,6 @@ function ReportedBlogs({ reportedBlogs, handleDenyReport, handleDeleteBlog }) {
                   </span>
                 </div>
 
-                {/* Action buttons */}
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleDenyReport(blog._id)}
