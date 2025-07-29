@@ -11,12 +11,14 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000",
-            "https://blog-app-2-xabg.onrender.com"
-            ],
+    origin: [
+      "http://localhost:3000", // Local frontend
+      "https://blog-app-2-xabg.onrender.com", // Render frontend
+    ],
     credentials: true,
   })
 );
+
 app.use("/api", route);
 
 connectDB()
@@ -25,10 +27,11 @@ connectDB()
   })
   .catch((err) => {
     console.error("Failed to connect to DB", err);
-    process.exit(1)
+    process.exit(1);
   });
 
-const PORT = 5000;
+//Use Render's dynamic PORT
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
