@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
+console.log("TRUST_HOST:", process.env.NEXTAUTH_TRUST_HOST);
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -28,6 +30,7 @@ export const authOptions = {
     }),
   ],
   secret:process.env.AUTH_SECRET,
+  trustHost: true, 
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
