@@ -5,7 +5,7 @@ export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
   // Define protected and public routes
-  const userRoutes = ['/homepage', '/homepage/addblog', '/homepage/update'];
+  const userRoutes = ['/homepage', '/homepage/addblog'];
   const adminRoutes = ['/admindashboard'];
   const publicRoutes = ['/', '/homepage/:id']; // Add /homepage/:id as a public route
 
