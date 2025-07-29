@@ -40,9 +40,15 @@ export default function UpdateBlogPage() {
 
           setLoading(false);
         })
-        .catch((error) => {
-          console.log(error)
+       .catch((error) => {
+        console.error("Error fetching blog:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
         });
+        toast.error("Failed to load blog data");
+        setLoading(false); // Avoid redirecting here
+      });
     }
   }, [id]);
 
