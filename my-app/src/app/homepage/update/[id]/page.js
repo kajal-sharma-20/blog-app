@@ -41,7 +41,7 @@ export default function UpdateBlogPage() {
           setLoading(false);
         })
         .catch((error) => {
-          router.push("/homepage");
+          console.log(error)
         });
     }
   }, [id]);
