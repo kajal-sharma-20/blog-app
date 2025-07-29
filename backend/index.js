@@ -20,7 +20,9 @@ app.use(
 );
 
 app.use("/api", route);
-
+app.get("/",(req,res)=>{
+  res.send("backend starts")
+})
 connectDB()
   .then(() => {
     initAdminOnStart();
