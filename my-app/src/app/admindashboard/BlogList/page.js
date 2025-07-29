@@ -1,33 +1,24 @@
 "use client";
-export const dynamic = "force-dynamic"; //  Prevent static pre-rendering
-
 import { useMemo, useState, useRef, useEffect } from "react";
 import { BiSolidLike, BiSolidDislike, BiSolidFlag } from "react-icons/bi";
 
-function BlogList({
-  allBlogs = [], // Default empty array
-  sortBy,
-  sortOrder,
-  setSortBy,
-  setSortOrder,
-  handleDeleteBlog = () => {}, // Default safe function
-}) {
+function BlogList({ allBlogs, sortBy, sortOrder, setSortBy, setSortOrder, handleDeleteBlog }) {
   const [showModal, setShowModal] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
   const modalRef = useRef(null);
 
-  // Sort blogs safely
+  // Sort blogs based on sortBy and sortOrder
   const sortedBlogs = useMemo(() => {
     return [...allBlogs].sort((a, b) => {
       if (sortBy === "author") {
-        const authorA = a?.author?.username?.toLowerCase() || "";
-        const authorB = b?.author?.username?.toLowerCase() || "";
+        const authorA = a.author?.username?.toLowerCase() || "";
+        const authorB = b.author?.username?.toLowerCase() || "";
         return sortOrder === "asc"
           ? authorA.localeCompare(authorB)
           : authorB.localeCompare(authorA);
       } else {
-        const dateA = new Date(a?.createdAt || 0).getTime();
-        const dateB = new Date(b?.createdAt || 0).getTime();
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
         return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
       }
     });
@@ -38,12 +29,13 @@ function BlogList({
     setSelectedBlog(blog);
     setShowModal(true);
   };
+
   const closeModal = () => {
     setShowModal(false);
     setSelectedBlog(null);
   };
 
-  // Close modal on outside click
+  // Handle outside click to close modal
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (showModal && modalRef.current && !modalRef.current.contains(event.target)) {
@@ -54,14 +46,14 @@ function BlogList({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showModal]);
 
-  // Truncate description safely
+  // Truncate description to first three words
   const getTruncatedDescription = (description) => {
     if (!description) return "No description...";
     const words = description.trim().split(/\s+/);
     return words.length > 3 ? words.slice(0, 3).join(" ") + "..." : description + "...";
   };
 
-  // Handle row click (exclude delete button)
+  // Handle row click, excluding delete button
   const handleRowClick = (e, blog) => {
     if (e.target.closest("button")) return;
     openModal(blog);
@@ -70,10 +62,8 @@ function BlogList({
   return (
     <>
       <h2 className="text-2xl font-bold mb-8 text-indigo-600">Blog Collection</h2>
-
-      {sortedBlogs.length > 0 ? (
+      {allBlogs.length > 0 ? (
         <div className="space-y-6">
-          {/* Sorting */}
           <div className="flex items-center gap-4">
             <label className="text-sm font-semibold text-gray-700">Sort by:</label>
             <select
@@ -92,7 +82,6 @@ function BlogList({
             </select>
           </div>
 
-          {/* Blog Table */}
           <div className="overflow-x-auto">
             <table className="w-full bg-white shadow-xl rounded-xl">
               <thead>
@@ -108,15 +97,15 @@ function BlogList({
               <tbody className="divide-y divide-gray-100">
                 {sortedBlogs.map((blog) => (
                   <tr
-                    key={blog?._id || Math.random()}
+                    key={blog._id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={(e) => handleRowClick(e, blog)}
                   >
                     <td className="p-3">
-                      {blog?.thumbnail ? (
+                      {blog.thumbnail ? (
                         <img
                           src={blog.thumbnail}
-                          alt={blog?.title || "Blog Thumbnail"}
+                          alt={blog.title}
                           className="w-10 h-10 rounded-lg object-cover"
                         />
                       ) : (
@@ -125,23 +114,19 @@ function BlogList({
                         </div>
                       )}
                     </td>
-                    <td className="p-3 text-sm text-gray-600">
-                      {blog?.author?.username || "Unknown Author"}
-                    </td>
-                    <td className="p-3 text-sm text-gray-800">{blog?.title || "Untitled Blog"}</td>
+                    <td className="p-3 text-sm text-gray-600">{blog.author?.username || "Unknown Author"}</td>
+                    <td className="p-3 text-sm text-gray-800">{blog.title}</td>
                     <td className="p-3">
                       <span className="px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
-                        {blog?.category || "Uncategorized"}
+                        {blog.category || "Uncategorized"}
                       </span>
                     </td>
-                    <td className="p-3 text-sm text-gray-600">
-                      {getTruncatedDescription(blog?.description)}
-                    </td>
+                    <td className="p-3 text-sm text-gray-600">{getTruncatedDescription(blog.description)}</td>
                     <td className="p-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteBlog(blog?._id);
+                          handleDeleteBlog(blog._id);
                         }}
                         className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
                       >
@@ -165,7 +150,7 @@ function BlogList({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
             ref={modalRef}
-            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative"
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
           >
             {/* Close Button */}
             <button
@@ -178,60 +163,47 @@ function BlogList({
             {/* Header */}
             <div className="flex items-center p-4 border-b border-gray-100">
               <div className="w-8 h-8 rounded-full bg-indigo-500 text-white font-bold flex items-center justify-center">
-                {selectedBlog?.author?.username?.[0]?.toUpperCase() || "U"}
+                {selectedBlog.author?.username?.[0]?.toUpperCase() || "U"}
               </div>
               <div className="ml-3">
-                <p className="text-sm font-semibold text-gray-800">
-                  {selectedBlog?.author?.username || "Unknown Author"}
-                </p>
-                <p className="text-xs text-gray-500">{selectedBlog?.category || "Uncategorized"}</p>
+                <p className="text-sm font-semibold text-gray-800">{selectedBlog.author?.username || "Unknown Author"}</p>
+                <p className="text-xs text-gray-500">{selectedBlog.category || "Uncategorized"}</p>
               </div>
             </div>
 
             {/* Image */}
-            {selectedBlog?.thumbnail && (
+            {selectedBlog.thumbnail && (
               <img
                 src={selectedBlog.thumbnail}
-                alt={selectedBlog?.title || "Blog Image"}
+                alt={selectedBlog.title}
                 className="w-full h-48 object-cover"
               />
             )}
 
             {/* Content */}
             <div className="p-5">
-              <h2 className="text-xl font-bold text-indigo-600 mb-3">
-                {selectedBlog?.title || "Untitled Blog"}
-              </h2>
-              <p className="text-gray-700 text-sm mb-6">
-                {selectedBlog?.description || "No description available."}
-              </p>
+              <h2 className="text-xl font-bold text-indigo-600 mb-3">{selectedBlog.title}</h2>
+              <p className="text-gray-700 text-sm mb-6">{selectedBlog.description}</p>
 
-              {/* Engagement */}
+              {/* Engagement Metrics */}
               <div className="flex items-center gap-4 text-sm text-gray-600 pt-4 border-t border-gray-100">
                 <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full">
                   <BiSolidLike className="text-blue-500" />
-                  <span>{selectedBlog?.likes?.length || 0}</span>
+                  <span>{selectedBlog.likes?.length || 0}</span>
                 </div>
                 <div className="flex items-center gap-1 bg-red-50 px-3 py-1 rounded-full">
                   <BiSolidDislike className="text-red-500" />
-                  <span>{selectedBlog?.dislikes?.length || 0}</span>
+                  <span>{selectedBlog.dislikes?.length || 0}</span>
                 </div>
                 <div className="flex items-center gap-1 bg-orange-50 px-3 py-1 rounded-full">
                   <BiSolidFlag className="text-orange-500" />
-                  <span>{selectedBlog?.reports?.length || 0}</span>
+                  <span>{selectedBlog.reports?.length || 0}</span>
                 </div>
               </div>
 
               {/* Date */}
               <p className="text-xs text-gray-400 mt-5">
-                Posted on{" "}
-                {selectedBlog?.createdAt
-                  ? new Date(selectedBlog.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "Unknown Date"}
+                Posted on {new Date(selectedBlog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
 
