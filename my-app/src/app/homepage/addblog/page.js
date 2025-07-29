@@ -139,7 +139,7 @@ export default function AddBlogPage() {
             <textarea
               id="description"
               name="description"
-              placeholder="Write your blog content..."
+              placeholder="Write your blog content...."
               value={form.description}
               onChange={handleChange}
               rows={6}
