@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
     if (status === "authenticated" && session?.user?.role !== "admin") {
       hasRedirected.current = true;
-      router.push("/admindashboard");
+      router.push("/homepage");
     } else if (status === "unauthenticated") {
       hasRedirected.current = true;
       router.push("/homepage");
