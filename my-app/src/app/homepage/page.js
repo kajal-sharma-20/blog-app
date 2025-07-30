@@ -125,14 +125,6 @@ function Home() {
     }
   }, [status, session]);
 
-  // Redirect admins to /admindashboard
-  useEffect(() => {
-    console.log("Session:", session); // Debug log
-    if (status === "authenticated" && session?.user?.role === "admin") {
-      setTimeout(() => router.push("/admindashboard"), 100); // Add delay
-    }
-  }, [status, session, router]);
-
   // Sort trashed blogs
   const sortedTrashedBlogs = useMemo(() => {
     return [...trashedBlogs].sort((a, b) => {
@@ -278,7 +270,6 @@ function Home() {
           : emailOrphone,
         password,
       });
-      console.log("signIn response:", res); // Debug
       if (!res?.error) {
         closeLoginModal();
         toast.success("Login successful");
@@ -593,7 +584,10 @@ function Home() {
   };
 
   // Guard rendering
-  if (status === "loading") {
+  if (
+    status === "loading" ||
+    (status === "authenticated" && session?.user?.role === "admin")
+  ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="flex flex-col items-center justify-center">
@@ -738,7 +732,7 @@ function Home() {
           <button
             onClick={() => filterByCategory("Education")}
             className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 transform hover:-translate-y-0.5 ${
-              activeCategory === "Lifestyle"
+              activeCategory === "Education"
                 ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
                 : "bg-white/80 text-gray-700 shadow-md hover:bg-white hover:shadow-lg"
             }`}
