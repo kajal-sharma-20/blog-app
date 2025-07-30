@@ -188,7 +188,7 @@ function BlogDetail() {
             {session?.user?.id && blog?.author?._id && session.user.id === blog.author._id && (
               <div className="flex items-center gap-2 animate-fadeIn">
                 <button
-                  onClick={() => router.push(`https://blog-app-1-2o6j.onrender.com/homepage/update/${blog._id}`)}
+                  onClick={() => router.push(`/homepage/update/${blog._id}`)}
                   className="relative overflow-hidden px-4 py-2 rounded-full flex items-center gap-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
                 >
                   <FaEdit />
