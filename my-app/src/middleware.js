@@ -5,18 +5,23 @@ export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
   // Define protected and public routes
-  const userRoutes = ['/homepage', '/homepage/addblog', '/homepage/update']; // Added update route
+  const userRoutes = ['/homepage', '/homepage/addblog'];
   const adminRoutes = ['/admindashboard'];
   const publicRoutes = ['/', '/homepage/:id']; // Blog details remain public
 
   // Get session token
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
+  // Explicitly handle /homepage/update/[id] first
+  if (pathname.startsWith('/homepage/update/')) {
+    if (!token) return NextResponse.redirect(new URL('/', req.url)); // Not logged in
+    return NextResponse.next(); // Allow logged-in user (ownership checked in backend)
+  }
+
   // Check if it's a public route
   const isPublicRoute = publicRoutes.some((route) => {
     if (route === '/homepage/:id') {
-      // Match dynamic route like /homepage/[id]
-      return /^\/homepage\/[^\/]+$/.test(pathname);
+      return /^\/homepage\/[^\/]+$/.test(pathname); // Match /homepage/[id]
     }
     return route === pathname;
   });
@@ -36,8 +41,8 @@ export async function middleware(req) {
   // Handle user access
   if (role === 'user') {
     if (
-      userRoutes.some((route) => pathname.startsWith(route)) || 
-      /^\/homepage\/[^\/]+$/.test(pathname) // Allow /homepage/[id]
+      userRoutes.some((route) => pathname.startsWith(route)) ||
+      /^\/homepage\/[^\/]+$/.test(pathname)
     ) {
       return NextResponse.next();
     }
@@ -50,8 +55,8 @@ export async function middleware(req) {
   // Handle admin access
   if (role === 'admin') {
     if (
-      adminRoutes.some((route) => pathname.startsWith(route)) || 
-      /^\/homepage\/[^\/]+$/.test(pathname) 
+      adminRoutes.some((route) => pathname.startsWith(route)) ||
+      /^\/homepage\/[^\/]+$/.test(pathname)
     ) {
       return NextResponse.next();
     }
@@ -66,7 +71,7 @@ export async function middleware(req) {
 
 export const config = {
   matcher: [
-    '/homepage/:path*', // Matches /homepage, /homepage/addblog, /homepage/update/[id]
+    '/homepage/:path*',
     '/admindashboard/:path*',
     '/',
   ],
