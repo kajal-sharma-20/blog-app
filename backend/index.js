@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000", // Local frontend
-      "https://blog-app-1-76hf.onrender.com", // Render frontend
+      "https://blog-app-1-2o6j.onrender.com", // Render frontend
     ],
     credentials: true,
   })
