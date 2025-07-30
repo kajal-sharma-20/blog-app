@@ -5,17 +5,17 @@ export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
   // Define protected and public routes
-  const userRoutes = ['/homepage', '/homepage/addblog'];
+  const userRoutes = ['/homepage', '/homepage/addblog', '/homepage/update']; // Added update route
   const adminRoutes = ['/admindashboard'];
-  const publicRoutes = ['/', '/homepage/:id']; // Add /homepage/:id as a public route
+  const publicRoutes = ['/', '/homepage/:id']; // Blog details remain public
 
   // Get session token
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
-  // Check if the route is public
+  // Check if it's a public route
   const isPublicRoute = publicRoutes.some((route) => {
     if (route === '/homepage/:id') {
-      // Match dynamic route /homepage/[id]
+      // Match dynamic route like /homepage/[id]
       return /^\/homepage\/[^\/]+$/.test(pathname);
     }
     return route === pathname;
@@ -26,7 +26,7 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
-  // If no session, restrict access to protected routes
+  // Block access if no token & not public
   if (!token) {
     return NextResponse.redirect(new URL('/', req.url));
   }
@@ -36,7 +36,7 @@ export async function middleware(req) {
   // Handle user access
   if (role === 'user') {
     if (
-      userRoutes.some((route) => pathname.startsWith(route)) ||
+      userRoutes.some((route) => pathname.startsWith(route)) || 
       /^\/homepage\/[^\/]+$/.test(pathname) // Allow /homepage/[id]
     ) {
       return NextResponse.next();
@@ -50,8 +50,8 @@ export async function middleware(req) {
   // Handle admin access
   if (role === 'admin') {
     if (
-      adminRoutes.some((route) => pathname.startsWith(route)) ||
-      /^\/homepage\/[^\/]+$/.test(pathname) // Allow /homepage/[id]
+      adminRoutes.some((route) => pathname.startsWith(route)) || 
+      /^\/homepage\/[^\/]+$/.test(pathname) 
     ) {
       return NextResponse.next();
     }
@@ -61,13 +61,12 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL('/admindashboard', req.url));
   }
 
-  // Fallback: redirect to home if role is invalid
   return NextResponse.redirect(new URL('/', req.url));
 }
 
 export const config = {
   matcher: [
-    '/homepage/:path*', // Matches /homepage and its subroutes
+    '/homepage/:path*', // Matches /homepage, /homepage/addblog, /homepage/update/[id]
     '/admindashboard/:path*',
     '/',
   ],
