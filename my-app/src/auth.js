@@ -10,7 +10,7 @@ export const authOptions = {
       },
 
       async authorize(credentials) {
-        const res = await fetch("https://blog-app-yktq.onrender.com/api/login", {
+        const res = await fetch("https://blog-app-tqiy.onrender.com/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
