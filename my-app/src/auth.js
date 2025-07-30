@@ -27,7 +27,7 @@ export const authOptions = {
       },
     }),
   ],
-  secret:process.env.AUTH_SECRET,
+  secret:process.env.NEXTAUTH_SECRET,
   trustHost: true,
   session: { strategy: "jwt" },
   callbacks: {
