@@ -125,6 +125,13 @@ function Home() {
     }
   }, [status, session]);
 
+  // Redirect admins to /admindashboard
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "admin") {
+      router.push("/admindashboard");
+    }
+  }, [status, session, router]);
+
   // Sort trashed blogs
   const sortedTrashedBlogs = useMemo(() => {
     return [...trashedBlogs].sort((a, b) => {
@@ -584,10 +591,7 @@ function Home() {
   };
 
   // Guard rendering
-  if (
-    status === "loading" ||
-    (status === "authenticated" && session?.user?.role === "admin")
-  ) {
+  if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="flex flex-col items-center justify-center">
