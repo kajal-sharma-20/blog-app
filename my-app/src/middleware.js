@@ -10,7 +10,7 @@ export async function middleware(req) {
   const publicRoutes = ['/', '/homepage/:id']; // Add /homepage/:id as a public route
 
   // Get session token
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   // Check if the route is public
   const isPublicRoute = publicRoutes.some((route) => {
