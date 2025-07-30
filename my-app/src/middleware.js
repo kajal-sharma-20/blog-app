@@ -4,21 +4,24 @@ import { NextResponse } from 'next/server';
 export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
-  // Define protected and public routes
-  const userRoutes = ['/homepage', '/homepage/addblog'];
-  const adminRoutes = ['/admindashboard'];
-  const publicRoutes = ['/', '/homepage/:id']; // Blog details remain public
-
   // Get session token
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
-  // Explicitly handle /homepage/update/[id] first
+  // Step 1: Handle /homepage/update/[id] first
   if (pathname.startsWith('/homepage/update/')) {
-    if (!token) return NextResponse.redirect(new URL('/', req.url)); // Not logged in
-    return NextResponse.next(); // Allow logged-in user (ownership checked in backend)
+    if (!token) {
+      // Not logged in → redirect to login page (/)
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+    return NextResponse.next(); // Logged in → allow (backend will verify ownership)
   }
 
-  // Check if it's a public route
+  // Define routes
+  const userRoutes = ['/homepage', '/homepage/addblog'];
+  const adminRoutes = ['/admindashboard'];
+  const publicRoutes = ['/', '/homepage/:id']; // Public blog detail
+
+  // Step 2: Public routes check
   const isPublicRoute = publicRoutes.some((route) => {
     if (route === '/homepage/:id') {
       return /^\/homepage\/[^\/]+$/.test(pathname); // Match /homepage/[id]
@@ -26,19 +29,18 @@ export async function middleware(req) {
     return route === pathname;
   });
 
-  // Allow unauthenticated users to access public routes
   if (!token && isPublicRoute) {
-    return NextResponse.next();
+    return NextResponse.next(); // Allow public route without login
   }
 
-  // Block access if no token & not public
+  // Step 3: Block if no token for protected routes
   if (!token) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
   const role = token.role;
 
-  // Handle user access
+  // Step 4: User access
   if (role === 'user') {
     if (
       userRoutes.some((route) => pathname.startsWith(route)) ||
@@ -52,7 +54,7 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL('/homepage', req.url));
   }
 
-  // Handle admin access
+  // Step 5: Admin access
   if (role === 'admin') {
     if (
       adminRoutes.some((route) => pathname.startsWith(route)) ||
@@ -71,7 +73,7 @@ export async function middleware(req) {
 
 export const config = {
   matcher: [
-    '/homepage/:path*',
+    '/homepage/:path*',  // Covers homepage, addblog, update/[id]
     '/admindashboard/:path*',
     '/',
   ],
