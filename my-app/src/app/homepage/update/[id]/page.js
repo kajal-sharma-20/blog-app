@@ -18,39 +18,40 @@ export default function UpdateBlogPage() {
   const [thumbnailName, setThumbnailName] = useState(""); // for showing name
   const [loading, setLoading] = useState(true);
 
-  // Fetch blog data on mount
+  // Fetch blog & check ownership
   useEffect(() => {
-    if (id) {
+    if (id && session?.user?.id) {
       axios
         .get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/blog/${id}`)
         .then((response) => {
           const data = response.data;
+
+          // Ownership check
+          if (data.author._id !== session.user.id) {
+            toast.error("You are not allowed to edit this blog");
+            router.push("/homepage");
+            return;
+          }
+
           setForm({
             title: data.title || "",
             description: data.description || "",
             category: data.category || "Lifestyle",
           });
 
-          // Extract image file name from path
           if (data.thumbnail) {
             const parts = data.thumbnail.split("/");
-            const name = parts[parts.length - 1];
-            setThumbnailName(name);
+            setThumbnailName(parts[parts.length - 1]);
           }
-
           setLoading(false);
         })
-       .catch((error) => {
-        console.error("Error fetching blog:", {
-          message: error.message,
-          status: error.response?.status,
-          data: error.response?.data,
+        .catch((error) => {
+          console.error("Error fetching blog:", error);
+          toast.error("Failed to load blog data");
+          setLoading(false);
         });
-        toast.error("Failed to load blog data");
-        setLoading(false); // Avoid redirecting here
-      });
     }
-  }, [id]);
+  }, [id, session]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
