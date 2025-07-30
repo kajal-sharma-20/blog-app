@@ -28,6 +28,7 @@ export const authOptions = {
     }),
   ],
   secret:process.env.AUTH_SECRET,
+  trustHost: true,
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
