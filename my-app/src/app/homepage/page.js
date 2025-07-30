@@ -127,8 +127,9 @@ function Home() {
 
   // Redirect admins to /admindashboard
   useEffect(() => {
+    console.log("Session:", session); // Debug log
     if (status === "authenticated" && session?.user?.role === "admin") {
-      router.push("/admindashboard");
+      setTimeout(() => router.push("/admindashboard"), 100); // Add delay
     }
   }, [status, session, router]);
 
@@ -277,6 +278,7 @@ function Home() {
           : emailOrphone,
         password,
       });
+      console.log("signIn response:", res); // Debug
       if (!res?.error) {
         closeLoginModal();
         toast.success("Login successful");
@@ -736,7 +738,7 @@ function Home() {
           <button
             onClick={() => filterByCategory("Education")}
             className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 transform hover:-translate-y-0.5 ${
-              activeCategory === "Education"
+              activeCategory === "Lifestyle"
                 ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
                 : "bg-white/80 text-gray-700 shadow-md hover:bg-white hover:shadow-lg"
             }`}
